@@ -1,10 +1,10 @@
-name: Android build (Expo export)
+name: Android APK build
 on:
   workflow_dispatch:
   push:
     branches: [main]
 jobs:
-  export:
+  apk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -12,9 +12,21 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm install
-      - run: npx expo export --platform android
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Install JS dependencies
+        run: npm install
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --clean
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: melty-android-bundle
-          path: dist/
+          name: melty-mobile-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
