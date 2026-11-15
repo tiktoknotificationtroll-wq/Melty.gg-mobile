@@ -1,0 +1,20 @@
+name: Android build (Expo export)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - run: npx expo export --platform android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: melty-android-bundle
+          path: dist/
